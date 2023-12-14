@@ -1,0 +1,28 @@
+[package]
+name = "otelmeister"
+version = "0.1.0"
+edition = "2021"
+authors = ["Marko Mikulicic <mmikulicic@gmail.com>"]
+description = "CLI tool for manipulating and viewing Jaeger and OTEL dump files"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { version = "1.0.75", features = ["backtrace"] }
+bytes = { version = "1.5.0", features = ["serde"] }
+clap = { version = "4.4.11", features = ["derive", "help", "env", "cargo"] }
+crossterm = { version = "0.27.0", default-features = false }
+duration-human = "0.1.10"
+hex = { version = "0.4.3", features = ["serde"] }
+opentelemetry-proto = { version = "0.4.0", features = [
+    "with-serde",
+    "prost",
+    "tonic",
+    "gen-tonic",
+    "trace",
+] }
+patharg = "0.3.0"
+prost = "0.11.0"
+serde = "1.0.193"
+serde_json = "1.0.108"
+thiserror = "1.0.50"
