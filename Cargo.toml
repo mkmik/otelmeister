@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Marko Mikulicic <mmikulicic@gmail.com>"]
 description = "CLI tool for manipulating and viewing Jaeger and OTEL dump files"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
