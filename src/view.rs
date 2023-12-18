@@ -1,3 +1,6 @@
+// This file is a bit of a mess because I let gpt-4 write the bulk of it
+// (with a ton of manual assistence)
+
 use clap::Parser;
 use duration_human::DurationHuman;
 use opentelemetry_proto::tonic::trace::v1::status::StatusCode;
