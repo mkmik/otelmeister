@@ -328,8 +328,6 @@ mod tests {
         ];
 
         let got = build_tree(&spans).expect("build tree");
-        println!("{:?}", got);
-        println!("{:?}", want);
         assert_eq!(got, want);
     }
 }
