@@ -3,10 +3,10 @@
 
 use clap::Parser;
 use duration_human::DurationHuman;
-use opentelemetry_proto::tonic::trace::v1::status::StatusCode;
-use std::{cell::Cell, collections::HashMap, rc::Rc};
+use opentelemetry_proto::tonic::trace::v1::{status::StatusCode, Span};
+use std::{cell::Cell, collections::HashMap, hash::Hash, rc::Rc};
 
-use crate::{open_trace, trace::Trace, Format};
+use crate::{open_trace, Format};
 
 type Result<T> = anyhow::Result<T>;
 
@@ -19,65 +19,71 @@ pub struct ViewCmd {
     format: Format,
 }
 
-#[derive(Default, Clone)]
-struct Children {
-    spans: Vec<Span>,
+trait Spanlike {
+    type SpanID;
+
+    fn span_id(&self) -> Self::SpanID;
+    fn parent_span_id(&self) -> Self::SpanID;
 }
 
-#[derive(Default, Clone)]
-struct Span {
-    span: opentelemetry_proto::tonic::trace::v1::Span,
-    children: Rc<Cell<Children>>,
-}
+impl Spanlike for Span {
+    type SpanID = Vec<u8>;
 
-impl std::fmt::Debug for Children {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Children")
-            .field(
-                "spans",
-                &self
-                    .spans
-                    .iter()
-                    .map(|Span { span, .. }| span)
-                    .collect::<Vec<_>>(),
-            )
-            .finish()
+    fn span_id(&self) -> Self::SpanID {
+        self.span_id.clone().clone()
+    }
+
+    fn parent_span_id(&self) -> Self::SpanID {
+        self.parent_span_id.clone()
     }
 }
 
-fn build_tree(trace: &Trace) -> Result<Children> {
-    let mut children_map: HashMap<Vec<u8>, Rc<Cell<Children>>> = HashMap::new();
+#[derive(Default, Clone)]
+struct Node<S>
+where
+    S: Spanlike,
+{
+    span: S,
+    children: Rc<Cell<Vec<Node<S>>>>,
+}
 
-    for span in &trace.spans {
-        let children = Children::default();
-        children_map.insert(span.span_id.clone(), Rc::new(Cell::new(children)));
+fn build_tree<S>(spans: &[S]) -> Result<Vec<Node<S>>>
+where
+    S: Spanlike + Clone + Default,
+    <S as Spanlike>::SpanID: Eq + Hash + Clone,
+{
+    let mut children_map = HashMap::new();
+
+    for span in spans {
+        let children = Default::default();
+        children_map.insert(span.span_id().clone(), Rc::new(Cell::new(children)));
     }
 
-    for span in &trace.spans {
-        let child = Span {
+    for span in spans {
+        let child = Node {
             span: span.clone(),
-            children: children_map.get(&span.span_id).unwrap().clone(),
+            children: children_map.get(&span.span_id()).unwrap().clone(),
         };
 
-        if let Some(parent_cell) = children_map.get(&span.parent_span_id) {
+        if let Some(parent_cell) = children_map.get(&span.parent_span_id()) {
             let mut parent_children = parent_cell.clone().take();
-            parent_children.spans.push(child);
+            parent_children.push(child);
             parent_cell.set(parent_children);
         }
     }
 
-    let mut root_nodes: Vec<Span> = vec![];
+    let mut root_nodes: Vec<Node<S>> = vec![];
 
-    for span in &trace.spans {
-        if children_map.get(&span.parent_span_id).is_none() {
-            root_nodes.push(Span {
+    for span in spans {
+        if children_map.get(&span.parent_span_id()).is_none() {
+            root_nodes.push(Node {
                 span: span.clone(),
-                children: children_map.get(&span.span_id).unwrap().clone(),
+                children: children_map.get(&span.span_id()).unwrap().clone(),
             });
         }
     }
 
-    Ok(Children { spans: root_nodes })
+    Ok(root_nodes)
 }
 
 fn truncate(s: &str, max_len: usize) -> String {
@@ -100,8 +106,8 @@ struct Renderer {
     total_duration: u64,
 }
 impl Renderer {
-    fn render(&self, children: &Children, indent: usize) {
-        for item in &children.spans {
+    fn render(&self, children: &[Node<Span>], indent: usize) {
+        for item in children {
             let (error, w_names) = if item
                 .span
                 .status
@@ -199,7 +205,7 @@ impl ViewCmd {
                 .unwrap(),
         };
 
-        let tree = build_tree(&trace)?;
+        let tree = build_tree(&trace.spans)?;
         renderer.render(&tree, 0);
 
         Ok(())
