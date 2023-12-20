@@ -160,11 +160,11 @@ mod tests {
         let jaeger_json_str = r#"
         {
             "data": [
-                {
-                    "traceID": "1",
+                {   
+                    "traceID": "01",
                     "spans": [
                         {
-                            "spanID": "2",
+                            "spanID": "02",
                             "operationName": "test_operation",
                             "references": [],
                             "tags": [{"key": "error", "type": "bool", "value": false}],
