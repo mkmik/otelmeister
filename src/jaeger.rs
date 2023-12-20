@@ -153,11 +153,10 @@ impl JaegerSpan {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use opentelemetry_proto::tonic::trace::v1::span::SpanKind;
     use std::io::Cursor;
 
     #[test]
-    fn test_parse_file() -> Result<()> {
+    fn test_parse_file() -> anyhow::Result<()> {
         let jaeger_json_str = r#"
         {
             "data": [
