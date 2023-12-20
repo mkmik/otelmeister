@@ -150,3 +150,37 @@ impl JaegerSpan {
         })
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use opentelemetry_proto::tonic::trace::v1::span::SpanKind;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_parse_file() -> Result<()> {
+        let jaeger_json_str = r#"
+        {
+            "data": [
+                {
+                    "traceID": "1",
+                    "spans": [
+                        {
+                            "spanID": "2",
+                            "operationName": "test_operation",
+                            "references": [],
+                            "tags": [{"key": "error", "type": "bool", "value": false}],
+                            "logs": [],
+                            "startTime": 1000,
+                            "duration": 200
+                        }
+                    ]
+                }
+            ]
+        }
+        "#;
+        let cursor = Cursor::new(jaeger_json_str);
+        let trace = parse_file(cursor)?;
+        assert_eq!(trace.spans.len(), 1);
+        Ok(())
+    }
+}
