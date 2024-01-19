@@ -22,7 +22,7 @@ opentelemetry-proto = { version = "0.4.0", features = [
     "gen-tonic",
     "trace",
 ] }
-patharg = "0.3.0"
+patharg = "0.4.0"
 prost = "0.11.0"
 serde = "1.0.195"
 serde_json = "1.0.108"
