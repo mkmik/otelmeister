@@ -759,9 +759,9 @@ dependencies = [
 
 [[package]]
 name = "patharg"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd2f5e6070e2afbc2bc942a1b9338a4018f0734fc9ad7293a98af20566645917"
+checksum = "1ada2bee7a186eb0d859bb985e47991d4c5b6887c95fc28c44ebc0e7d52b526a"
 dependencies = [
  "cfg-if",
  "either",
