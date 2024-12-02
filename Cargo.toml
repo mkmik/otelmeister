@@ -12,7 +12,7 @@ license = "MIT"
 anyhow = { version = "1.0.82", features = ["backtrace"] }
 bytes = { version = "1.6.0", features = ["serde"] }
 clap = { version = "4.5.4", features = ["derive", "help", "env", "cargo"] }
-crossterm = { version = "0.27.0", default-features = false }
+crossterm = { version = "0.28.0", default-features = false }
 duration-human = "0.1.10"
 hex = { version = "0.4.3", features = ["serde"] }
 opentelemetry-proto = { version = "0.4.0", features = [
